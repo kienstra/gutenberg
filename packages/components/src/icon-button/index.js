@@ -22,7 +22,7 @@ class IconButton extends Component {
 	render() {
 		const { icon, children, label, className, tooltip, focus, shortcut, ...additionalProps } = this.props;
 		const classes = classnames( 'components-icon-button', className );
-		const tooltipText = tooltip || label;
+		const tooltipText = tooltip === true ? label : ( tooltip || label );
 
 		// Should show the tooltip if...
 		const showTooltip = (
@@ -30,6 +30,8 @@ class IconButton extends Component {
 			tooltip ||
 			// there's a shortcut or...
 			shortcut ||
+			// there's a label and tooltip is explicitly enabled or...
+			( !! label && tooltip === true ) ||
 			(
 				// there's a label and...
 				!! label &&

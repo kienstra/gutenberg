@@ -37,6 +37,7 @@ class Inserter extends Component {
 			position,
 			title,
 			children,
+			dotTip,
 			onInsertBlock,
 			rootClientId,
 		} = this.props;
@@ -44,6 +45,30 @@ class Inserter extends Component {
 		if ( items.length === 0 ) {
 			return null;
 		}
+		const renderToggle = ( { onToggle, isOpen } ) => {
+			const insertButton = (
+				<IconButton
+					icon="insert"
+					label={ __( 'Add block' ) }
+					onClick={ onToggle }
+					className="editor-inserter__toggle"
+					aria-haspopup="true"
+					aria-expanded={ isOpen }
+					dotTip={ dotTip }
+				>
+					{ children }
+				</IconButton>
+			);
+			if ( dotTip ) {
+				return (
+					<div>
+						{ insertButton }
+						{ dotTip }
+					</div>
+				);
+			}
+			return insertButton;
+		};
 
 		return (
 			<Dropdown
@@ -53,18 +78,7 @@ class Inserter extends Component {
 				onToggle={ this.onToggle }
 				expandOnMobile
 				headerTitle={ title }
-				renderToggle={ ( { onToggle, isOpen } ) => (
-					<IconButton
-						icon="insert"
-						label={ __( 'Add block' ) }
-						onClick={ onToggle }
-						className="editor-inserter__toggle"
-						aria-haspopup="true"
-						aria-expanded={ isOpen }
-					>
-						{ children }
-					</IconButton>
-				) }
+				renderToggle={ renderToggle }
 				renderContent={ ( { onClose } ) => {
 					const onSelect = ( item ) => {
 						onInsertBlock( item );
