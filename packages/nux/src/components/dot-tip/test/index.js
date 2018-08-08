@@ -9,10 +9,12 @@ import { noop } from 'lodash';
  */
 import { DotTip } from '..';
 
+jest.mock( '../../../../../components/src/button' );
+
 describe( 'DotTip', () => {
 	it( 'should not render anything if invisible', () => {
 		const wrapper = shallow(
-			<DotTip>
+			<DotTip onRegister={ noop } onUnregister={ noop }>
 				It looks like you’re writing a letter. Would you like help?
 			</DotTip>
 		);
@@ -21,7 +23,7 @@ describe( 'DotTip', () => {
 
 	it( 'should render correctly', () => {
 		const wrapper = shallow(
-			<DotTip isVisible setTimeout={ noop }>
+			<DotTip isVisible onRegister={ noop } onUnregister={ noop }>
 				It looks like you’re writing a letter. Would you like help?
 			</DotTip>
 		);
@@ -31,7 +33,7 @@ describe( 'DotTip', () => {
 	it( 'should call onDismiss when the dismiss button is clicked', () => {
 		const onDismiss = jest.fn();
 		const wrapper = shallow(
-			<DotTip isVisible onDismiss={ onDismiss } setTimeout={ noop }>
+			<DotTip isVisible onDismiss={ onDismiss } onRegister={ noop } onUnregister={ noop }>
 				It looks like you’re writing a letter. Would you like help?
 			</DotTip>
 		);
@@ -42,7 +44,7 @@ describe( 'DotTip', () => {
 	it( 'should call onDisable when the X button is clicked', () => {
 		const onDisable = jest.fn();
 		const wrapper = shallow(
-			<DotTip isVisible onDisable={ onDisable } setTimeout={ noop }>
+			<DotTip isVisible onDisable={ onDisable } onRegister={ noop } onUnregister={ noop }>
 				It looks like you’re writing a letter. Would you like help?
 			</DotTip>
 		);

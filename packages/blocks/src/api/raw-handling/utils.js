@@ -1,63 +1,23 @@
 /**
  * External dependencies
  */
-import { omit, mergeWith, includes, noop } from 'lodash';
+import { mergeWith, includes, noop } from 'lodash';
 
 /**
  * WordPress dependencies
  */
 import { unwrap, insertAfter, remove } from '@wordpress/dom';
+import { hasBlockSupport } from '..';
+
+/**
+ * Internal dependencies
+ */
+import { isPhrasingContent } from './phrasing-content';
 
 /**
  * Browser dependencies
  */
 const { ELEMENT_NODE, TEXT_NODE } = window.Node;
-
-const phrasingContentSchema = {
-	strong: {},
-	em: {},
-	del: {},
-	ins: {},
-	a: { attributes: [ 'href' ] },
-	code: {},
-	abbr: { attributes: [ 'title' ] },
-	sub: {},
-	sup: {},
-	br: {},
-	'#text': {},
-};
-
-// Recursion is needed.
-// Possible: strong > em > strong.
-// Impossible: strong > strong.
-[ 'strong', 'em', 'del', 'ins', 'a', 'code', 'abbr', 'sub', 'sup' ].forEach( ( tag ) => {
-	phrasingContentSchema[ tag ].children = omit( phrasingContentSchema, tag );
-} );
-
-/**
- * Get schema of possible paths for phrasing content.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
- *
- * @return {Object} Schema.
- */
-export function getPhrasingContentSchema() {
-	return phrasingContentSchema;
-}
-
-/**
- * Find out whether or not the given node is phrasing content.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
- *
- * @param {Element} node The node to test.
- *
- * @return {boolean} True if phrasing content, false if not.
- */
-export function isPhrasingContent( node ) {
-	const tag = node.nodeName.toLowerCase();
-	return getPhrasingContentSchema().hasOwnProperty( tag ) || tag === 'span';
-}
 
 /**
  * Given raw transforms from blocks, merges all schemas into one.
@@ -67,7 +27,18 @@ export function isPhrasingContent( node ) {
  * @return {Object} A complete block content schema.
  */
 export function getBlockContentSchema( transforms ) {
-	const schemas = transforms.map( ( { schema } ) => schema );
+	const schemas = transforms.map( ( { blockName, schema } ) => {
+		// If the block supports the "anchor" functionality, it needs to keep its ID attribute.
+		if ( hasBlockSupport( blockName, 'anchor' ) ) {
+			for ( const tag in schema ) {
+				if ( ! schema[ tag ].attributes ) {
+					schema[ tag ].attributes = [];
+				}
+				schema[ tag ].attributes.push( 'id' );
+			}
+		}
+		return schema;
+	} );
 
 	return mergeWith( {}, ...schemas, ( objValue, srcValue, key ) => {
 		if ( key === 'children' ) {

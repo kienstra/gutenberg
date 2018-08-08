@@ -6,12 +6,10 @@ import { compact, flatMap, forEach, get, has, includes, map, noop, startsWith } 
 /**
  * WordPress dependencies
  */
+import deprecated from '@wordpress/deprecated';
 import { __, sprintf } from '@wordpress/i18n';
-
-/**
- * WordPress dependencies
- */
 import apiFetch from '@wordpress/api-fetch';
+import { select } from '@wordpress/data';
 
 /**
  * Browsers may use unexpected mime types, and they differ from browser to browser.
@@ -27,6 +25,11 @@ import apiFetch from '@wordpress/api-fetch';
  * @return {?Array} An array of mime types or the parameter passed if it was "falsy".
  */
 export function getMimeTypesArray( wpMimeTypesObject ) {
+	deprecated( 'wp.utils.getMimeTypesArray', {
+		version: '3.6',
+		plugin: 'Gutenberg',
+	} );
+
 	if ( ! wpMimeTypesObject ) {
 		return wpMimeTypesObject;
 	}
@@ -55,10 +58,19 @@ export function mediaUpload( {
 	allowedType,
 	additionalData = {},
 	filesList,
-	maxUploadFileSize = get( window, [ '_wpMediaSettings', 'maxUploadSize' ], 0 ),
+	maxUploadFileSize,
 	onError = noop,
 	onFileChange,
 } ) {
+	deprecated( 'wp.utils.mediaUpload', {
+		version: '3.6',
+		alternative: 'wp.editor.mediaUpload',
+		plugin: 'Gutenberg',
+	} );
+
+	const editorSettings = select( 'core/editor' ).getSettings();
+	maxUploadFileSize = maxUploadFileSize || editorSettings.maxUploadFileSize;
+
 	// Cast filesList to array
 	const files = [ ...filesList ];
 
@@ -74,7 +86,7 @@ export function mediaUpload( {
 	};
 
 	// Allowed types for the current WP_User
-	const allowedMimeTypesForUser = getMimeTypesArray( get( window, [ '_wpMediaSettings', 'allowedMimeTypes' ] ) );
+	const allowedMimeTypesForUser = getMimeTypesArray( editorSettings.allowedMimeTypes );
 	const isAllowedMimeTypeForUser = ( fileType ) => {
 		return includes( allowedMimeTypesForUser, fileType );
 	};
@@ -176,6 +188,11 @@ function createMediaFromFile( file, additionalData ) {
  * @return {Promise}     Promise resolved once the image is preloaded.
  */
 export function preloadImage( url ) {
+	deprecated( 'wp.utils.preloadImage', {
+		version: '3.6',
+		plugin: 'Gutenberg',
+	} );
+
 	return new Promise( ( resolve ) => {
 		const newImg = new window.Image();
 		newImg.onload = function() {

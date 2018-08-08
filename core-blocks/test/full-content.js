@@ -87,8 +87,6 @@ function normalizeParsedBlocks( blocks ) {
 
 		// Change client IDs to a predictable value
 		block.clientId = '_clientId_' + index;
-		// TODO: Remove in 3.5 "UID" deprecation.
-		delete block.uid;
 
 		// Walk each attribute and get a more concise representation of any
 		// React elements
@@ -108,7 +106,7 @@ describe( 'full post content fixture', () => {
 		unstable__bootstrapServerSideBlockDefinitions( require( './server-registered.json' ) );
 
 		// Load all hooks that modify blocks
-		require( 'editor/hooks' );
+		require( '../../packages/editor/src/hooks' );
 		registerCoreBlocks();
 	} );
 
@@ -146,7 +144,7 @@ describe( 'full post content fixture', () => {
 				).toEqual( parserOutputExpected );
 			} catch ( err ) {
 				throw new Error( format(
-					'File \'%s.parsed.json\' does not match expected value:\n\n%s',
+					"File '%s.parsed.json' does not match expected value:\n\n%s",
 					f,
 					err.message
 				) );
@@ -188,7 +186,7 @@ describe( 'full post content fixture', () => {
 				).toEqual( blocksExpected );
 			} catch ( err ) {
 				throw new Error( format(
-					'File \'%s.json\' does not match expected value:\n\n%s',
+					"File '%s.json' does not match expected value:\n\n%s",
 					f,
 					err.message
 				) );
@@ -214,7 +212,7 @@ describe( 'full post content fixture', () => {
 				expect( serializedActual ).toEqual( serializedExpected );
 			} catch ( err ) {
 				throw new Error( format(
-					'File \'%s.serialized.html\' does not match expected value:\n\n%s',
+					"File '%s.serialized.html' does not match expected value:\n\n%s",
 					f,
 					err.message
 				) );
@@ -225,50 +223,55 @@ describe( 'full post content fixture', () => {
 	it( 'should be present for each block', () => {
 		const errors = [];
 
-		getBlockTypes().map( ( block ) => block.name ).forEach( ( name ) => {
-			const nameToFilename = name.replace( /\//g, '__' );
-			const foundFixtures = fileBasenames
-				.filter( ( basename ) => (
-					basename === nameToFilename ||
-					startsWith( basename, nameToFilename + '__' )
-				) )
-				.map( ( basename ) => {
-					// The file that contains the input HTML for this test.
-					const inputFilename = basename + '.html';
-					// The parser output for this test.  For missing files,
-					// JSON.parse( null ) === null.
-					const parserOutput = JSON.parse(
-						readFixtureFile( basename + '.json' )
-					);
-					// The name of the first block that this fixture file
-					// contains (if any).
-					const firstBlock = get( parserOutput, [ '0', 'name' ], null );
-					return {
-						filename: inputFilename,
-						parserOutput,
-						firstBlock,
-					};
-				} )
-				.filter( ( fixture ) => fixture.parserOutput !== null );
+		getBlockTypes()
+			.map( ( block ) => block.name )
+			// We don't want tests for each oembed provider, which all have the same
+			// `save` functions and attributes.
+			.filter( ( name ) => name.indexOf( 'core-embed' ) !== 0 )
+			.forEach( ( name ) => {
+				const nameToFilename = name.replace( /\//g, '__' );
+				const foundFixtures = fileBasenames
+					.filter( ( basename ) => (
+						basename === nameToFilename ||
+						startsWith( basename, nameToFilename + '__' )
+					) )
+					.map( ( basename ) => {
+						// The file that contains the input HTML for this test.
+						const inputFilename = basename + '.html';
+						// The parser output for this test.  For missing files,
+						// JSON.parse( null ) === null.
+						const parserOutput = JSON.parse(
+							readFixtureFile( basename + '.json' )
+						);
+						// The name of the first block that this fixture file
+						// contains (if any).
+						const firstBlock = get( parserOutput, [ '0', 'name' ], null );
+						return {
+							filename: inputFilename,
+							parserOutput,
+							firstBlock,
+						};
+					} )
+					.filter( ( fixture ) => fixture.parserOutput !== null );
 
-			if ( ! foundFixtures.length ) {
-				errors.push( format(
-					'Expected a fixture file called \'%s.html\' or \'%s__*.html\'.',
-					nameToFilename,
-					nameToFilename
-				) );
-			}
-
-			foundFixtures.forEach( ( fixture ) => {
-				if ( name !== fixture.firstBlock ) {
+				if ( ! foundFixtures.length ) {
 					errors.push( format(
-						'Expected fixture file \'%s\' to test the \'%s\' block.',
-						fixture.filename,
-						name
+						"Expected a fixture file called '%s.html' or '%s__*.html'.",
+						nameToFilename,
+						nameToFilename
 					) );
 				}
+
+				foundFixtures.forEach( ( fixture ) => {
+					if ( name !== fixture.firstBlock ) {
+						errors.push( format(
+							"Expected fixture file '%s' to test the '%s' block.",
+							fixture.filename,
+							name
+						) );
+					}
+				} );
 			} );
-		} );
 
 		if ( errors.length ) {
 			throw new Error(

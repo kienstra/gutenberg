@@ -1,12 +1,11 @@
 /**
  * Internal dependencies
  */
-import '../support/bootstrap';
 import {
 	newPost,
-	newDesktopBrowserPage,
 	insertBlock,
 	searchForBlock,
+	selectBlockByClientId,
 } from '../support/utils';
 import { activatePlugin, deactivatePlugin } from '../support/plugins';
 
@@ -35,9 +34,16 @@ async function getFirstInserterIcon() {
 }
 
 describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
-	const dashIconRegex = /<svg.*class=".*dashicons-cart.*?">.*<\/svg>/;
+	const dashIconRegex = /<svg.*?class=".*?dashicons-cart.*?">.*?<\/svg>/;
 	const circleString = '<circle cx="10" cy="10" r="10" fill="red" stroke="blue" stroke-width="10"></circle>';
 	const svgIcon = `<svg width="20" height="20" viewBox="0 0 20 20">${ circleString }</svg>`;
+
+	const getBlockIdFromBlockName = async ( blockName ) => {
+		return await page.$eval(
+			`[data-type="${ blockName }"] > .editor-block-list__block-edit`,
+			( el ) => el.getAttribute( 'data-block' )
+		);
+	};
 
 	const validateSvgIcon = ( iconHtml ) => {
 		expect( iconHtml ).toMatch( svgIcon );
@@ -48,14 +54,7 @@ describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
 	};
 
 	beforeAll( async () => {
-		await newDesktopBrowserPage();
 		await activatePlugin( 'gutenberg-test-block-icons' );
-		// accept the prompt if the post is "dirty"
-		await page.on( 'dialog', async ( dialog ) => {
-			if ( dialog ) {
-				await dialog.accept();
-			}
-		} );
 	} );
 
 	beforeEach( async () => {
@@ -81,7 +80,7 @@ describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
 
 		it( 'Renders correctly the icon on the inspector', async () => {
 			await insertBlock( blockTitle );
-			await page.focus( `[data-type="${ blockName }"]` );
+			await selectBlockByClientId( await getBlockIdFromBlockName( blockName ) );
 			validateIcon( await getInnerHTML( INSPECTOR_ICON_SELECTOR ) );
 		} );
 	}
@@ -116,7 +115,7 @@ describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
 
 		it( 'Renders the icon in the inspector with the correct colors', async () => {
 			await insertBlock( blockTitle );
-			await page.focus( `[data-type="${ blockName }"]` );
+			await selectBlockByClientId( await getBlockIdFromBlockName( blockName ) );
 			validateDashIcon(
 				await getInnerHTML( INSPECTOR_ICON_SELECTOR )
 			);
@@ -137,7 +136,7 @@ describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
 
 		it( 'Renders correctly the icon on the inspector', async () => {
 			await insertBlock( blockTitle );
-			await page.focus( `[data-type="${ blockName }"]` );
+			await selectBlockByClientId( await getBlockIdFromBlockName( blockName ) );
 			validateSvgIcon(
 				await getInnerHTML( INSPECTOR_ICON_SELECTOR )
 			);

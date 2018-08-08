@@ -2,12 +2,46 @@
  * External dependencies
  */
 import { createStore } from 'redux';
-import { flowRight, without, mapValues, overEvery, get } from 'lodash';
+import {
+	flowRight,
+	without,
+	mapValues,
+	overEvery,
+	get,
+} from 'lodash';
+
+/**
+ * WordPress dependencies
+ */
+import deprecated from '@wordpress/deprecated';
 
 /**
  * Internal dependencies
  */
 import dataStore from './store';
+import { persistence } from './plugins';
+
+/**
+ * An isolated orchestrator of store registrations.
+ *
+ * @typedef {WPDataRegistry}
+ *
+ * @property {Function} registerReducer
+ * @property {Function} registerSelectors
+ * @property {Function} registerResolvers
+ * @property {Function} registerActions
+ * @property {Function} registerStore
+ * @property {Function} subscribe
+ * @property {Function} select
+ * @property {Function} dispatch
+ * @property {Function} use
+ */
+
+/**
+ * An object of registry function overrides.
+ *
+ * @typedef {WPDataPlugin}
+ */
 
 /**
  * Returns true if the given argument appears to be a dispatchable action.
@@ -81,6 +115,14 @@ export function toAsyncIterable( object ) {
 	}() );
 }
 
+/**
+ * Creates a new store registry, given an optional object of initial store
+ * configurations.
+ *
+ * @param {Object} storeConfigs Initial store configurations.
+ *
+ * @return {WPDataRegistry} Data registry.
+ */
 export function createRegistry( storeConfigs = {} ) {
 	const namespaces = {};
 	let listeners = [];
@@ -93,7 +135,8 @@ export function createRegistry( storeConfigs = {} ) {
 	}
 
 	/**
-	 * Registers a new sub-reducer to the global state and returns a Redux-like store object.
+	 * Registers a new sub-reducer to the global state and returns a Redux-like
+	 * store object.
 	 *
 	 * @param {string} reducerKey Reducer key.
 	 * @param {Object} reducer    Reducer function.
@@ -106,7 +149,7 @@ export function createRegistry( storeConfigs = {} ) {
 			enhancers.push( window.__REDUX_DEVTOOLS_EXTENSION__( { name: reducerKey, instanceId: reducerKey } ) );
 		}
 		const store = createStore( reducer, flowRight( enhancers ) );
-		namespaces[ reducerKey ] = { store };
+		namespaces[ reducerKey ] = { store, reducer };
 
 		// Customize subscribe behavior to call listeners only on effective change,
 		// not on every dispatch.
@@ -182,11 +225,12 @@ export function createRegistry( storeConfigs = {} ) {
 				// Attempt to normalize fulfillment as async iterable.
 				fulfillment = toAsyncIterable( fulfillment );
 				if ( ! isAsyncIterable( fulfillment ) ) {
+					finishResolution( reducerKey, selectorName, args );
 					return;
 				}
 
 				for await ( const maybeAction of fulfillment ) {
-				// Dispatch if it quacks like an action.
+					// Dispatch if it quacks like an action.
 					if ( isActionLike( maybeAction ) ) {
 						store.dispatch( maybeAction );
 					}
@@ -298,12 +342,38 @@ export function createRegistry( storeConfigs = {} ) {
 		return get( namespaces, [ reducerKey, 'actions' ] );
 	}
 
-	Object.entries( {
-		'core/data': dataStore,
-		...storeConfigs,
-	} ).map( ( [ name, config ] ) => registerStore( name, config ) );
+	/**
+	 * Setup persistence for the current registry.
+	 *
+	 * @param {string} storageKey The storage key.
+	 */
+	function setupPersistence( storageKey ) {
+		deprecated( 'data registry setupPersistence', {
+			alternative: 'persistence plugin',
+			version: '3.7',
+			plugin: 'Gutenberg',
+			hint: 'See https://github.com/WordPress/gutenberg/pull/8341 for more details',
+		} );
 
-	return {
+		registry.use( persistence, { storageKey } );
+	}
+
+	/**
+	 * Maps an object of function values to proxy invocation through to the
+	 * current internal representation of the registry, which may be enhanced
+	 * by plugins.
+	 *
+	 * @param {Object<string,Function>} fns Object of function values.
+	 *
+	 * @return {Object<string,Function>} Object enhanced with plugin proxying.
+	 */
+	function withPlugins( fns ) {
+		return mapValues( fns, ( fn, key ) => function() {
+			return registry[ key ].apply( null, arguments );
+		} );
+	}
+
+	let registry = {
 		registerReducer,
 		registerSelectors,
 		registerResolvers,
@@ -312,5 +382,32 @@ export function createRegistry( storeConfigs = {} ) {
 		subscribe,
 		select,
 		dispatch,
+		setupPersistence,
+		use,
 	};
+
+	/**
+	 * Enhances the registry with the prescribed set of overrides. Returns the
+	 * enhanced registry to enable plugin chaining.
+	 *
+	 * @param {WPDataPlugin} plugin  Plugin by which to enhance.
+	 * @param {?Object}      options Optional options to pass to plugin.
+	 *
+	 * @return {WPDataRegistry} Enhanced registry.
+	 */
+	function use( plugin, options ) {
+		registry = {
+			...registry,
+			...plugin( registry, options ),
+		};
+
+		return registry;
+	}
+
+	Object.entries( {
+		'core/data': dataStore,
+		...storeConfigs,
+	} ).map( ( [ name, config ] ) => registerStore( name, config ) );
+
+	return withPlugins( registry );
 }

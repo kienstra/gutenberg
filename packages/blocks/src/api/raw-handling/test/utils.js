@@ -1,7 +1,8 @@
 /**
  * Internal dependencies
  */
-import { isEmpty, isPlain, removeInvalidHTML, getPhrasingContentSchema } from '../utils';
+import { getPhrasingContentSchema } from '../phrasing-content';
+import { isEmpty, isPlain, removeInvalidHTML } from '../utils';
 
 describe( 'isEmpty', () => {
 	function isEmptyHTML( HTML ) {
@@ -109,6 +110,12 @@ describe( 'removeInvalidHTML', () => {
 		expect( removeInvalidHTML( input, schema ) ).toBe( output );
 	} );
 
+	it( 'should remove id attributes', () => {
+		const input = '<p id="foo">test</p>';
+		const output = '<p>test</p>';
+		expect( removeInvalidHTML( input, schema ) ).toBe( output );
+	} );
+
 	it( 'should remove multiple attributes', () => {
 		const input = '<p class="test" id="test">test</p>';
 		const output = '<p>test</p>';
@@ -128,8 +135,8 @@ describe( 'removeInvalidHTML', () => {
 	} );
 
 	it( 'should keep some attributes', () => {
-		const input = '<a href="#keep">test</a>';
-		const output = '<a href="#keep">test</a>';
+		const input = '<a href="#keep" target="_blank">test</a>';
+		const output = '<a href="#keep" target="_blank">test</a>';
 		expect( removeInvalidHTML( input, schema ) ).toBe( output );
 	} );
 

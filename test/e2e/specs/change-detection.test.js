@@ -1,10 +1,9 @@
 /**
  * Internal dependencies
  */
-import '../support/bootstrap';
 import {
+	clickBlockAppender,
 	newPost,
-	newDesktopBrowserPage,
 	pressWithModifier,
 	ensureSidebarOpened,
 	publishPost,
@@ -12,10 +11,6 @@ import {
 
 describe( 'Change detection', () => {
 	let handleInterceptedRequest, hadInterceptedSave;
-
-	beforeAll( async () => {
-		await newDesktopBrowserPage();
-	} );
 
 	beforeEach( async () => {
 		hadInterceptedSave = false;
@@ -32,8 +27,7 @@ describe( 'Change detection', () => {
 	async function assertIsDirty( isDirty ) {
 		let hadDialog = false;
 
-		function handleOnDialog( dialog ) {
-			dialog.accept();
+		function handleOnDialog() {
 			hadDialog = true;
 		}
 
@@ -98,7 +92,9 @@ describe( 'Change detection', () => {
 
 		// Toggle post as sticky (not persisted for autosave).
 		await ensureSidebarOpened();
-		await page.click( '[id^="post-sticky-toggle-"]' );
+
+		const postStickyToggleButton = ( await page.$x( "//label[contains(text(), 'Stick to the Front Page')]" ) )[ 0 ];
+		await postStickyToggleButton.click( 'button' );
 
 		// Force autosave to occur immediately.
 		await Promise.all( [
@@ -144,7 +140,7 @@ describe( 'Change detection', () => {
 	} );
 
 	it( 'Should prompt if content added without save', async () => {
-		await page.click( '.editor-default-block-appender' );
+		await clickBlockAppender();
 
 		await assertIsDirty( true );
 	} );
@@ -192,7 +188,7 @@ describe( 'Change detection', () => {
 			pressWithModifier( 'Mod', 'S' ),
 
 			// Ensure save update fails and presents button.
-			page.waitForXPath( '//p[contains(text(), \'Updating failed\')]' ),
+			page.waitForXPath( "//p[contains(text(), 'Updating failed')]" ),
 			page.waitForSelector( '.editor-post-save-draft' ),
 		] );
 
@@ -268,7 +264,7 @@ describe( 'Change detection', () => {
 		// Keyboard shortcut Ctrl+S save.
 		await pressWithModifier( 'Mod', 'S' );
 
-		await page.click( '.editor-default-block-appender' );
+		await clickBlockAppender();
 
 		// Allow save to complete. Disabling interception flushes pending.
 		await Promise.all( [

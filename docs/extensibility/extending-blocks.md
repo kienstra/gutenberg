@@ -10,6 +10,30 @@ To modify the behavior of existing blocks, Gutenberg exposes the following Filte
 
 Used to filter the block settings. It receives the block settings and the name of the block the registered block as arguments.
 
+_Example:_
+
+Ensure that List blocks are saved with the canonical generated class name (`wp-block-list`):
+
+```js
+function addListBlockClassName( settings, name ) {
+	if ( name !== 'core/list' ) {
+		return settings;
+	}
+
+	return lodash.assign( {}, settings, {
+		supports: lodash.assign( {}, settings.supports, {
+			className: true
+		} ),
+	} );
+}
+
+wp.hooks.addFilter(
+	'blocks.registerBlockType',
+	'my-plugin/class-names/list-block',
+	addListBlockClassName
+);
+```
+
 #### `blocks.getSaveElement`
 
 A filter that applies to the result of a block's `save` function. This filter is used to replace or extend the element, for example using `wp.element.cloneElement` to modify the element's props or replace its children, or returning an entirely new element.
@@ -24,7 +48,7 @@ Adding a background by default to all blocks.
 
 ```js
 function addBackgroundColorStyle( props ) {
-	return Object.assign( props, { style: { backgroundColor: 'red' } } );
+	return lodash.assign( props, { style: { backgroundColor: 'red' } } );
 }
 
 wp.hooks.addFilter(
@@ -115,11 +139,11 @@ var el = wp.element.createElement;
 
 var withDataAlign = wp.compose.createHigherOrderComponent( function( BlockListBlock ) {
 	return function( props ) {
-		var newProps = Object.assign(
+		var newProps = lodash.assign(
 			{},
 			props,
 			{
-				wrapperProps: Object.assign(
+				wrapperProps: lodash.assign(
 					{},
 					props.wrapperProps,
 					{

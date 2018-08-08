@@ -629,7 +629,7 @@ describe( 'block factory', () => {
 			expect( availableBlocks ).toEqual( [] );
 		} );
 
-		it( 'for a non multiblock transform, the isMatch function receives the source block\'s attributes object as its first argument', () => {
+		it( 'for a non multiblock transform, the isMatch function receives the source block’s attributes object as its first argument', () => {
 			const isMatch = jest.fn();
 
 			registerBlockType( 'core/updated-text-block', {
@@ -661,7 +661,7 @@ describe( 'block factory', () => {
 			expect( isMatch ).toHaveBeenCalledWith( { value: 'ribs' } );
 		} );
 
-		it( 'for a multiblock transform, the isMatch function receives an array containing every source block\'s attributes as its first argument', () => {
+		it( 'for a multiblock transform, the isMatch function receives an array containing every source block’s attributes as its first argument', () => {
 			const isMatch = jest.fn();
 
 			registerBlockType( 'core/updated-text-block', {
@@ -1024,9 +1024,9 @@ describe( 'block factory', () => {
 
 			const transformedBlocks = switchToBlockType( block, 'core/updated-text-block' );
 
-			// Make sure the block UIDs are set as expected: the first
+			// Make sure the block client IDs are set as expected: the first
 			// transformed block whose type matches the "destination" type gets
-			// to keep the existing block's UID.
+			// to keep the existing block's client ID.
 			expect( transformedBlocks ).toHaveLength( 2 );
 			expect( transformedBlocks[ 0 ] ).toHaveProperty( 'clientId' );
 			expect( transformedBlocks[ 0 ].clientId ).not.toBe( block.clientId );

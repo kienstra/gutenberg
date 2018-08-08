@@ -1,7 +1,5 @@
 .wp-block-freeform.core-blocks-rich-text__tinymce {
 	overflow: hidden;
-	margin: -4px;
-	padding: 4px;
 
 	p,
 	li {
@@ -72,7 +70,7 @@
 		padding: 0 2px;
 		margin: 0 -2px;
 		border-radius: 2px;
-		box-shadow: 0 0 0 1px $blue-medium-100;
+		box-shadow: 0 0 0 $border-width $blue-medium-100;
 		background: $blue-medium-100;
 	}
 
@@ -112,13 +110,13 @@
 		margin: 15px auto;
 		outline: 0;
 		cursor: default;
-		border: 2px dashed rgb( 186, 186, 186 );
+		border: 2px dashed rgb(186, 186, 186);
 	}
 }
 
 .editor-block-list__layout .editor-block-list__block[data-type="core/freeform"] {
-	.editor-block-list__block-edit:before {
-		outline: 1px solid #e2e4e7;
+	.editor-block-list__block-edit::before {
+		outline: $border-width solid #e2e4e7;
 	}
 
 	// Don't show normal block toolbar
@@ -134,28 +132,28 @@
 
 
 div[data-type="core/freeform"] .editor-block-contextual-toolbar + div {
-    margin-top: 0;
-    padding-top: 0;
+	margin-top: 0;
+	padding-top: 0;
 }
 
 .freeform-toolbar {
 	width: auto;
-	margin: #{ -$block-padding } #{ -$parent-block-padding };
-	margin-bottom: $block-padding;
+	margin: 0 #{ -$parent-block-padding };
 	position: sticky;
-	z-index: z-index( '.freeform-toolbar' );
-	top: 0;
+	z-index: z-index(".freeform-toolbar");
+	top: $block-padding;
+	transform: translateY(-$block-padding);
 }
 
 .freeform-toolbar:empty {
 	height: $block-toolbar-height;
 	background: #f5f5f5;
-	border-bottom: 1px solid #e2e4e7;
+	border-bottom: $border-width solid #e2e4e7;
 
-	&:before {
+	&::before {
 		font-family: $default-font;
 		font-size: $default-font-size;
-		content: attr( data-placeholder );
+		content: attr(data-placeholder);
 		color: #555d66;
 		line-height: 37px;
 		padding: $block-padding;

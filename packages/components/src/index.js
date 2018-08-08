@@ -1,16 +1,13 @@
-/**
- * Internal dependencies
- */
-import deprecated from './deprecated';
-
 // Components
-export { default as APIProvider } from './higher-order/with-api-data/provider';
+// eslint-disable-next-line camelcase
+export { default as APIProvider, unstable__setApiSettings } from './higher-order/with-api-data/provider';
 export { default as Autocomplete } from './autocomplete';
 export { default as BaseControl } from './base-control';
 export { default as Button } from './button';
 export { default as ButtonGroup } from './button-group';
 export { default as CheckboxControl } from './checkbox-control';
 export { default as ClipboardButton } from './clipboard-button';
+export { default as ColorIndicator } from './color-indicator';
 export { default as ColorPalette } from './color-palette';
 export { default as Dashicon } from './dashicon';
 export { DateTimePicker, DatePicker, TimePicker } from './date-time';
@@ -71,9 +68,3 @@ export { default as withFocusOutside } from './higher-order/with-focus-outside';
 export { default as withFocusReturn } from './higher-order/with-focus-return';
 export { default as withNotices } from './higher-order/with-notices';
 export { default as withSpokenMessages } from './higher-order/with-spoken-messages';
-
-export const ifCondition = deprecated.ifCondition;
-export const withGlobalEvents = deprecated.withGlobalEvents;
-export const withInstanceId = deprecated.withInstanceId;
-export const withSafeTimeout = deprecated.withSafeTimeout;
-export const withState = deprecated.withState;
