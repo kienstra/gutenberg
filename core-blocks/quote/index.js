@@ -62,6 +62,7 @@ export const settings = {
 	styles: [
 		{ name: 'default', label: __( 'Regular' ), isDefault: true },
 		{ name: 'large', label: __( 'Large' ) },
+		{ name: 'elaborate', label: __( 'Elaborate' ) },
 	],
 
 	transforms: {
