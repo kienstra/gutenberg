@@ -387,7 +387,8 @@ export class Autocomplete extends Component {
 			this.toggleKeyEvents( ! ! this.state.open );
 		}
 
-		if ( richTextStructure.isCollapsed( record ) ) {
+		const noSelection = record.selection.start === undefined;
+		if ( richTextStructure.isCollapsed( record ) || noSelection ) {
 			const text = getTextBeforeSelection( record );
 			const prevText = getTextBeforeSelection( prevRecord );
 

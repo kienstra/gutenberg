@@ -398,6 +398,10 @@ export class RichText extends Component {
 			record = transformed;
 		}
 
+		// Ensure related input and selection changes are considered simultaneously
+		// by child components that depend on them (e.g., Autocomplete).
+		this.onSelectionChange();
+
 		this.savedContent = record.value;
 		this.props.onChange( record.value );
 	}
