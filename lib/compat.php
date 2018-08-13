@@ -88,39 +88,6 @@ function gutenberg_disable_editor_settings_wpautop( $settings, $editor_id ) {
 add_filter( 'wp_editor_settings', 'gutenberg_disable_editor_settings_wpautop', 10, 2 );
 
 /**
- * Add TinyMCE fixes for the Classic Editor.
- *
- * @see https://core.trac.wordpress.org/ticket/44308
- */
-function gutenberg_add_classic_editor_fixes() {
-	// Temp add the fix for not creating paragraphs from HTML comments.
-	// TODO: remove after 4.9.7, this should be in core.
-	$script = <<<JS
-jQuery( document ).on( 'tinymce-editor-setup', function( event, editor ) {
-	var hasWpautop = ( window.wp && window.wp.editor && window.wp.editor.autop && editor.getParam( 'wpautop', true ) );
-
-	editor.on( 'BeforeSetContent', function( event ) {
-		if ( event.load && event.format !== 'raw' && ! hasWpautop ) {
-			// Prevent creation of paragraphs out of multiple HTML comments.
-			event.content = event.content.replace( /-->\s+<!--/g, '--><!--' );
-		}
-	});
-
-	editor.on( 'SaveContent', function( event ) {
-		if ( ! hasWpautop ) {
-			// Restore formatting of block boundaries.
-			event.content = event.content.replace( /-->\s*<!-- wp:/g, '-->\\n\\n<!-- wp:' );
-		}
-	});
-});
-JS;
-
-	wp_add_inline_script( 'editor', $script, 'before' );
-
-}
-add_action( 'init', 'gutenberg_add_classic_editor_fixes' );
-
-/**
  * Add rest nonce to the heartbeat response.
  *
  * @param  array $response Original heartbeat response.
@@ -380,7 +347,7 @@ function gutenberg_warn_classic_about_cloudflare() {
 					<?php
 						printf(
 							/* translators: %s link to an issue in the Gutenberg repository */
-							__( 'If neither of these options are possible for you, please <a href="%s">follow this issue for updates</a>. We hope to have this issue rectifed soon!', 'gutenberg' ),
+							__( 'If neither of these options are possible for you, please <a href="%s">follow this issue for updates</a>. We hope to have this issue rectified soon!', 'gutenberg' ),
 							'https://github.com/WordPress/gutenberg/issues/2704'
 						);
 					?>

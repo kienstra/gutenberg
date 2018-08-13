@@ -7,22 +7,31 @@ import { URL } from 'url';
 /**
  * External dependencies
  */
-import { times } from 'lodash';
+import { times, castArray } from 'lodash';
 
 const {
-	WP_BASE_URL = 'http://localhost:8889',
+	WP_BASE_URL = 'http://localhost:8888',
 	WP_USERNAME = 'admin',
 	WP_PASSWORD = 'password',
 } = process.env;
 
 /**
- * Platform-specific modifier key.
+ * Platform-specific meta key.
  *
  * @see pressWithModifier
  *
  * @type {string}
  */
-const MOD_KEY = process.platform === 'darwin' ? 'Meta' : 'Control';
+export const META_KEY = process.platform === 'darwin' ? 'Meta' : 'Control';
+
+/**
+ * Platform-specific modifier for the access key chord.
+ *
+ * @see pressWithModifier
+ *
+ * @type {string}
+ */
+export const ACCESS_MODIFIER_KEYS = process.platform === 'darwin' ? [ 'Control', 'Alt' ] : [ 'Shift', 'Alt' ];
 
 /**
  * Regular expression matching zero-width space characters.
@@ -75,6 +84,34 @@ async function login() {
 		page.waitForNavigation(),
 		page.click( '#wp-submit' ),
 	] );
+}
+
+/**
+ * Returns a promise which resolves once it's determined that the active DOM
+ * element is not within a RichText field, or the RichText field's TinyMCE has
+ * completed initialization. This is an unfortunate workaround to address an
+ * issue where TinyMCE takes its time to become ready for user input.
+ *
+ * TODO: This is a code smell, indicating that "too fast" resulting in breakage
+ * could be equally problematic for a fast human. It should be explored whether
+ * all event bindings we assign to TinyMCE to handle could be handled through
+ * the DOM directly instead.
+ *
+ * @return {Promise} Promise resolving once RichText is initialized, or is
+ *                   determined to not be a container of the active element.
+ */
+async function waitForRichTextInitialization() {
+	const isInRichText = await page.evaluate( () => {
+		return !! document.activeElement.closest( '.editor-rich-text__tinymce' );
+	} );
+
+	if ( ! isInRichText ) {
+		return;
+	}
+
+	return page.waitForFunction( () => {
+		return !! document.activeElement.closest( '.mce-content-body' );
+	} );
 }
 
 export async function visitAdmin( adminPath, query ) {
@@ -170,6 +207,7 @@ export async function ensureSidebarOpened() {
  */
 export async function clickBlockAppender() {
 	await expect( page ).toClick( '.editor-default-block-appender__content' );
+	await waitForRichTextInitialization();
 }
 
 /**
@@ -199,25 +237,28 @@ export async function insertBlock( searchTerm, panelName = null ) {
 		await panelButton.click();
 	}
 	await page.click( `button[aria-label="${ searchTerm }"]` );
+	await waitForRichTextInitialization();
 }
 
 /**
  * Performs a key press with modifier (Shift, Control, Meta, Mod), where "Mod"
  * is normalized to platform-specific modifier (Meta in MacOS, else Control).
  *
- * @param {string} modifier Modifier key.
- * @param {string} key      Key to press while modifier held.
- *
- * @return {Promise} Promise resolving when key combination pressed.
+ * @param {string|Array} modifiers Modifier key or array of modifier keys.
+ * @param {string} key      	   Key to press while modifier held.
  */
-export async function pressWithModifier( modifier, key ) {
-	if ( modifier.toLowerCase() === 'mod' ) {
-		modifier = MOD_KEY;
-	}
+export async function pressWithModifier( modifiers, key ) {
+	const modifierKeys = castArray( modifiers );
 
-	await page.keyboard.down( modifier );
+	await Promise.all(
+		modifierKeys.map( async ( modifier ) => page.keyboard.down( modifier ) )
+	);
+
 	await page.keyboard.press( key );
-	return page.keyboard.up( modifier );
+
+	await Promise.all(
+		modifierKeys.map( async ( modifier ) => page.keyboard.up( modifier ) )
+	);
 }
 
 /**
@@ -309,9 +350,20 @@ export function enablePageDialogAccept() {
 }
 
 /**
- * Disables even listener which accepts a page dialog which
- * may appear when navigating away from Gutenberg.
+ * Click on the close button of an open modal.
+ *
+ * @param {?string} modalClassName Class name for the modal to close
  */
-export function disablePageDialogAccept() {
-	page.removeListener( 'dialog', acceptPageDialog );
+export async function clickOnCloseModalButton( modalClassName ) {
+	let closeButtonClassName = '.components-modal__header .components-icon-button';
+
+	if ( modalClassName ) {
+		closeButtonClassName = `${ modalClassName } ${ closeButtonClassName }`;
+	}
+
+	const closeButton = await page.$( closeButtonClassName );
+
+	if ( closeButton ) {
+		await page.click( closeButtonClassName );
+	}
 }

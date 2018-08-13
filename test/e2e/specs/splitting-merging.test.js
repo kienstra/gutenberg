@@ -7,6 +7,7 @@ import {
 	getEditedPostContent,
 	pressTimes,
 	pressWithModifier,
+	META_KEY,
 } from '../support/utils';
 
 describe( 'splitting and merging blocks', () => {
@@ -43,7 +44,7 @@ describe( 'splitting and merging blocks', () => {
 		await page.keyboard.down( 'Shift' );
 		await pressTimes( 'ArrowRight', 5 );
 		await page.keyboard.up( 'Shift' );
-		await pressWithModifier( 'mod', 'b' );
+		await pressWithModifier( META_KEY, 'b' );
 		// Collapse selection, still within inline boundary.
 		await page.keyboard.press( 'ArrowRight' );
 		await page.keyboard.press( 'Enter' );
@@ -56,7 +57,7 @@ describe( 'splitting and merging blocks', () => {
 		// Regression Test: Caret should reset to end of inline boundary when
 		// backspacing to delete second paragraph.
 		await insertBlock( 'Paragraph' );
-		await pressWithModifier( 'mod', 'b' );
+		await pressWithModifier( META_KEY, 'b' );
 		await page.keyboard.type( 'Foo' );
 		await page.keyboard.press( 'Enter' );
 		await page.keyboard.press( 'Backspace' );
@@ -86,16 +87,22 @@ describe( 'splitting and merging blocks', () => {
 	} );
 
 	it( 'should not merge paragraphs if the selection is not collapsed', async () => {
+		// Regression Test: When all of a paragraph is selected, pressing
+		// backspace should delete the contents, not merge to previous.
+		//
+		// See: https://github.com/WordPress/gutenberg/issues/8268
 		await insertBlock( 'Paragraph' );
 		await page.keyboard.type( 'Foo' );
 		await insertBlock( 'Paragraph' );
 		await page.keyboard.type( 'Bar' );
 
+		// Select text.
 		await page.keyboard.down( 'Shift' );
 		await pressTimes( 'ArrowLeft', 3 );
 		await page.keyboard.up( 'Shift' );
-		await page.keyboard.press( 'Backspace' );
 
+		// Delete selection.
+		await page.keyboard.press( 'Backspace' );
 		expect( await getEditedPostContent() ).toMatchSnapshot();
 	} );
 
@@ -112,12 +119,55 @@ describe( 'splitting and merging blocks', () => {
 		await page.keyboard.down( 'Shift' );
 		await pressTimes( 'ArrowLeft', 3 );
 		await page.keyboard.up( 'Shift' );
-		await pressWithModifier( 'mod', 'b' );
+		await pressWithModifier( META_KEY, 'b' );
 		await page.keyboard.press( 'ArrowRight' );
 		await page.keyboard.press( 'Enter' );
 		await page.keyboard.press( 'Enter' );
 
 		await page.keyboard.press( 'Backspace' );
+
+		expect( await getEditedPostContent() ).toMatchSnapshot();
+	} );
+
+	it( 'should forward delete from an empty paragraph', async () => {
+		// Regression test: Bogus nodes in a TinyMCE container can interfere
+		// with isHorizontalEdge detection, preventing forward deletion.
+		//
+		// See: https://github.com/WordPress/gutenberg/issues/8731
+		await insertBlock( 'Paragraph' );
+		await page.keyboard.press( 'Enter' );
+		await page.keyboard.type( 'Second' );
+		await page.keyboard.press( 'ArrowUp' );
+		await page.keyboard.press( 'Delete' );
+
+		expect( await getEditedPostContent() ).toMatchSnapshot();
+	} );
+
+	it( 'should remove empty paragraph block on backspace', async () => {
+		// Regression Test: In a sole empty paragraph, pressing backspace
+		// should remove the block.
+		//
+		// See: https://github.com/WordPress/gutenberg/pull/8306
+		await insertBlock( 'Paragraph' );
+		await page.keyboard.press( 'Backspace' );
+
+		expect( await getEditedPostContent() ).toMatchSnapshot();
+	} );
+
+	it( 'should remove at most one paragraph in forward direction', async () => {
+		// Regression Test: A forward delete on empty RichText previously would
+		// destroy two paragraphs on the dual-action of merge & remove.
+		//
+		// See: https://github.com/WordPress/gutenberg/pull/8735
+		await insertBlock( 'Paragraph' );
+		await page.keyboard.type( 'First' );
+		await page.keyboard.press( 'Enter' );
+		await page.keyboard.press( 'Enter' );
+		await page.keyboard.press( 'Enter' );
+		await page.keyboard.type( 'Second' );
+		await page.keyboard.press( 'ArrowUp' );
+		await page.keyboard.press( 'ArrowUp' );
+		await page.keyboard.press( 'Delete' );
 
 		expect( await getEditedPostContent() ).toMatchSnapshot();
 	} );

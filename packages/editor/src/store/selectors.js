@@ -108,6 +108,11 @@ export function isEditedPostDirty( state ) {
  * @return {boolean} Whether new post and unsaved values exist.
  */
 export function isCleanNewPost( state ) {
+	deprecated( 'isCleanNewPost selector', {
+		version: '3.8',
+		plugin: 'Gutenberg',
+	} );
+
 	return ! isEditedPostDirty( state ) && isEditedPostNew( state );
 }
 
@@ -436,11 +441,17 @@ export function isEditedPostBeingScheduled( state ) {
  * @return {string} Document title.
  */
 export function getDocumentTitle( state ) {
+	deprecated( 'getDocumentTitle selector', {
+		version: '3.8',
+		plugin: 'Gutenberg',
+	} );
+
 	let title = getEditedPostAttribute( state, 'title' );
 
 	if ( ! title || ! title.trim() ) {
 		title = isCleanNewPost( state ) ? __( 'New post' ) : __( '(Untitled)' );
 	}
+
 	return title;
 }
 
@@ -1747,18 +1758,6 @@ export function isPublishingPost( state ) {
 	// Consider as publishing when current post prior to request was not
 	// considered published
 	return !! stateBeforeRequest && ! isCurrentPostPublished( stateBeforeRequest );
-}
-
-/**
- * Returns the provisional block client ID, or null if there is no provisional
- * block.
- *
- * @param {Object} state Editor state.
- *
- * @return {?string} Provisional block client ID, if set.
- */
-export function getProvisionalBlockClientId( state ) {
-	return state.provisionalBlockClientId;
 }
 
 /**
