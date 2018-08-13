@@ -220,11 +220,21 @@ describe( 'full post content fixture', () => {
 		const errors = [];
 
 		getBlockTypes()
-			.map( ( block ) => block.name )
 			// We don't want tests for each oembed provider, which all have the same
 			// `save` functions and attributes.
-			.filter( ( name ) => name.indexOf( 'core-embed' ) !== 0 )
-			.forEach( ( name ) => {
+			.filter( ( { name } ) => name.indexOf( 'core-embed' ) !== 0 )
+			.forEach( ( { name, deprecated = [] } ) => {
+				const deprecatedFixtures = fileBasenames.filter( ( basename ) => {
+					return startsWith( basename, nameToFilename + '__deprecated' );
+				} );
+
+				if ( deprecated.length !== deprecatedFixtures.length ) {
+					errors.push( format(
+						"Expected fixture files for each '%s' deprecation.",
+						name
+					) );
+				}
+
 				const nameToFilename = name.replace( /\//g, '__' );
 				const foundFixtures = fileBasenames
 					.filter( ( basename ) => (
