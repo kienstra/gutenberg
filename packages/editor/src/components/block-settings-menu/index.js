@@ -24,7 +24,7 @@ import ReusableBlockDeleteButton from './reusable-block-delete-button';
 import BlockHTMLConvertButton from './block-html-convert-button';
 import BlockUnknownConvertButton from './block-unknown-convert-button';
 import _BlockSettingsMenuFirstItem from './block-settings-menu-first-item';
-import _BlockSettingsMenuPluginsExtension from './block-settings-menu-plugins-extension';
+import PluginsBlockSettingsMenuGroup from '../plugins-block-settings-menu-group';
 
 const preventDefault = ( event ) => {
 	event.preventDefault();
@@ -66,6 +66,7 @@ export class BlockSettingsMenu extends Component {
 
 	render() {
 		const {
+			blocks,
 			clientIds,
 			onSelect,
 			focus,
@@ -158,7 +159,7 @@ export class BlockSettingsMenu extends Component {
 									onToggle={ onClose }
 								/>
 							) }
-							<_BlockSettingsMenuPluginsExtension.Slot fillProps={ { clientIds, onClose } } />
+							<PluginsBlockSettingsMenuGroup.Slot fillProps={ { blocks, onClose } } />
 							<div className="editor-block-settings-menu__separator" />
 							{ count === 1 && (
 								<ReusableBlockDeleteButton
