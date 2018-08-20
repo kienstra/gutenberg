@@ -93,6 +93,14 @@
 }
 
 .editor-block-list__block {
+	font-family: $editor-font;
+	line-height: $editor-line-height;
+	color: $dark-gray-700;
+
+	p {
+		font-size: $editor-font-size;
+	}
+
 	&.is-hidden *,
 	&.is-hidden > * {
 		visibility: hidden;
@@ -100,6 +108,20 @@
 
 	.editor-block-list__block-edit .reusable-block-edit-panel * {
 		z-index: z-index(".editor-block-list__block-edit .reusable-block-edit-panel *");
+	}
+
+	& ul,
+	& ol {
+		margin: 0;
+		padding: 0;
+	}
+
+	& ul:not(.wp-block-gallery) {
+		list-style-type: disc;
+	}
+
+	& ol {
+		list-style-type: decimal;
 	}
 }
 
