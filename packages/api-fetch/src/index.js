@@ -20,7 +20,7 @@ import {
 } from './utils/response';
 
 /**
- * A default set of header values which should be sent with every request unless
+ * A default set of the header values which should be sent with every request unless
  * explicitly provided through apiFetch options.
  *
  * @type {Object}
