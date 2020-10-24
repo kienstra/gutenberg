@@ -256,6 +256,11 @@ beforeAll( async () => {
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	observeConsoleLogging();
+	page.on( 'Network.loadingFailed', ( message, args ) => {
+		console.log(
+			`The network failed to load with message ${ message } and args ${ args }`
+		);
+	} );
 	await simulateAdverseConditions();
 
 	await trashAllPosts();
