@@ -256,9 +256,9 @@ beforeAll( async () => {
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	observeConsoleLogging();
-	page.on( 'Network.loadingFailed', ( message, args ) => {
+	page.on( 'console', ( message, args ) => {
 		console.log(
-			`The network failed to load with message ${ message } and args ${ args }`
+			`There was a console event with message ${ message } and args ${ args }`
 		);
 	} );
 	await simulateAdverseConditions();
