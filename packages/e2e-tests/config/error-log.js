@@ -26,8 +26,8 @@ class ErrorLog {
 	}
 
 	getNetworkErrors() {
-		if (this.networkErrors.length) {
-			return `Here are the network errors: \n \n${this.networkErrors} \n`;
+		if ( this.networkErrors.length ) {
+			return `Here is the last network error: \n \n${ this.networkErrors.pop() } \n`;
 		}
 	}
 }

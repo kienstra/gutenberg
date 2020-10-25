@@ -266,12 +266,14 @@ beforeAll( async () => {
 	await cdpSession.send( 'Network.enable' );
 
 	cdpSession.on( 'Network.responseReceived', ( message ) => {
-		const status = message && message.response && message.response.status ? message.response.status : null;
+		const status =
+			message && message.response && message.response.status
+				? message.response.status
+				: null;
 		if ( status && 200 !== status ) {
 			errorLog.addNetworkError( message.response );
 		}
 	} );
-
 
 	await simulateAdverseConditions();
 	await trashAllPosts();

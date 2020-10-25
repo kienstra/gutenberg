@@ -20,7 +20,7 @@ module.exports = class ErrorCaptureReporter extends VerboseReporter {
 			this.checkForSingleSelector();
 			this.checkCompoundSelector();
 			console.log( errorLog.getConsoleMessage() );
-			console.log( `Here are the network errors: ${ errorLog.getNetworkErrors() }` );
+			console.log( errorLog.getNetworkErrors() );
 		}
 
 		super.onTestResult( ...args );
