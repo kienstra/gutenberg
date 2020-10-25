@@ -16,6 +16,11 @@ import {
 } from '@wordpress/e2e-test-utils';
 
 /**
+ * Internal dependencies
+ */
+import errorLog from './error-log';
+
+/**
  * Timeout, in seconds, that the test should be allowed to run.
  *
  * @type {string|undefined}
@@ -256,13 +261,19 @@ beforeAll( async () => {
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	observeConsoleLogging();
-	page.on( 'console', ( message, args ) => {
-		console.log(
-			`There was a console event with message ${ message } and args ${ args }`
-		);
-	} );
-	await simulateAdverseConditions();
 
+	const cdpSession = await page.target().createCDPSession();
+	await cdpSession.send( 'Network.enable' );
+
+	cdpSession.on( 'Network.responseReceived', ( message ) => {
+		const status = message && message.response && message.response.status ? message.response.status : null;
+		if ( status && 200 !== status ) {
+			errorLog.addNetworkError( message.response );
+		}
+	} );
+
+
+	await simulateAdverseConditions();
 	await trashAllPosts();
 	await trashAllPosts( 'wp_block' );
 	await setupBrowser();

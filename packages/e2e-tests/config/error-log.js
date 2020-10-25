@@ -2,6 +2,7 @@ class ErrorLog {
 	constructor() {
 		this.screenshot = '';
 		this.dom = '';
+		this.networkErrors = [];
 	}
 
 	setScreenshot( screenshot ) {
@@ -16,8 +17,18 @@ class ErrorLog {
 		return this.dom;
 	}
 
+	addNetworkError( error ) {
+		this.networkErrors.push( error );
+	}
+
 	getConsoleMessage() {
 		return `Here is a screenshot of when the test failed: \n \ndata:image/jpeg;base64,${ this.screenshot } \n`;
+	}
+
+	getNetworkErrors() {
+		if (this.networkErrors.length) {
+			return `Here are the network errors: \n \n${this.networkErrors} \n`;
+		}
 	}
 }
 
