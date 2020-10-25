@@ -265,6 +265,35 @@ beforeAll( async () => {
 	const cdpSession = await page.target().createCDPSession();
 	await cdpSession.send( 'Network.enable' );
 
+	const events = [
+		'Network.loadingFailed',
+		'Network.loadingFinished',
+		'Network.requestServedFromCache',
+		'Network.requestWillBeSent',
+		'Network.resourceChangedPriority',
+		'Network.responseReceived',
+		'Page.domContentEventFired',
+		'Page.frameAttached',
+		'Page.frameNavigated',
+		'Page.frameScheduledNavigation',
+		'Page.frameStartedLoading',
+		'Page.loadEventFired',
+		'Page.navigatedWithinDocument',
+	];
+
+	events.forEach( ( event ) => {
+		errorLog.addNetworkError( `This event was triggered: ${ event }` );
+		cdpSession.on('Network.responseReceived', (message) => {
+			const status =
+				message && message.response && message.response.status
+					? message.response.status
+					: null;
+			if (status && 200 !== status) {
+				errorLog.addNetworkError( message.response );
+			}
+		});
+	});
+
 	cdpSession.on( 'Network.responseReceived', ( message ) => {
 		const status =
 			message && message.response && message.response.status
