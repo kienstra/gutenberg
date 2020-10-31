@@ -21,7 +21,11 @@ module.exports = class ErrorCaptureEnvironment extends PuppeteerEnvironment {
 				message && message.response && message.response.status
 					? message.response.status
 					: null;
-			if ( status && 200 !== status ) {
+			if ( ! status ) {
+				return;
+			}
+
+			if ( status >= 300 || status < 200 ) {
 				errorLog.addNetworkError( message.response );
 			}
 		} );

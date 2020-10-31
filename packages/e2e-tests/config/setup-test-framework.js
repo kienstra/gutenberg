@@ -256,8 +256,8 @@ beforeAll( async () => {
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	observeConsoleLogging();
-
 	await simulateAdverseConditions();
+
 	await trashAllPosts();
 	await trashAllPosts( 'wp_block' );
 	await setupBrowser();
