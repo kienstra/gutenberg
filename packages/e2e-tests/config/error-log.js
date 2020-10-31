@@ -26,14 +26,21 @@ class ErrorLog {
 	}
 
 	getNetworkErrors() {
-		if ( this.networkErrors.length ) {
-			return `Here is the last network error: \n \n${ JSON.stringify(
-				this.networkErrors.pop(),
+		if ( this.networkErrors.length > 1 ) {
+			return `💡 Here are the network errors, starting with the latest: \n \n${ JSON.stringify(
+				this.networkErrors.reverse(),
 				null,
 				2
 			) } \n`;
 		}
 
+		if ( this.networkErrors.length === 1 ) {
+			return `💡 There was a network error that might be related: \n \n${ JSON.stringify(
+				this.networkErrors,
+				null,
+				2
+			) } \n`;
+		}
 		return `There was no network error`;
 	}
 }
