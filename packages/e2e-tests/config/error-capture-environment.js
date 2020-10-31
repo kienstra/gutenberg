@@ -10,6 +10,23 @@ const PuppeteerEnvironment = require( 'jest-environment-puppeteer' );
 const errorLog = require( './error-log' );
 
 module.exports = class ErrorCaptureEnvironment extends PuppeteerEnvironment {
+	async setup() {
+		await super.setup();
+
+		const cdpSession = await this.global.page.target().createCDPSession();
+		await cdpSession.send( 'Network.enable' );
+
+		cdpSession.on( 'Network.responseReceived', ( message ) => {
+			const status =
+				message && message.response && message.response.status
+					? message.response.status
+					: null;
+			if ( status && 200 !== status ) {
+				errorLog.addNetworkError( message.response );
+			}
+		} );
+	}
+
 	async teardown() {
 		const screenshotPath = path.join(
 			__dirname,

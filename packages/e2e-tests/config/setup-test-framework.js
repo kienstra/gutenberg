@@ -16,11 +16,6 @@ import {
 } from '@wordpress/e2e-test-utils';
 
 /**
- * Internal dependencies
- */
-import errorLog from './error-log';
-
-/**
  * Timeout, in seconds, that the test should be allowed to run.
  *
  * @type {string|undefined}
@@ -261,35 +256,6 @@ beforeAll( async () => {
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	observeConsoleLogging();
-
-	const cdpSession = await page.target().createCDPSession();
-	await cdpSession.send( 'Network.enable' );
-
-	const events = [
-		'Network.loadingFailed',
-		'Network.loadingFinished',
-		'Network.requestServedFromCache',
-		'Network.requestWillBeSent',
-		'Network.resourceChangedPriority',
-		'Network.responseReceived',
-		'Page.domContentEventFired',
-		'Page.frameAttached',
-		'Page.frameNavigated',
-		'Page.frameScheduledNavigation',
-		'Page.frameStartedLoading',
-		'Page.loadEventFired',
-		'Page.navigatedWithinDocument',
-	];
-
-	cdpSession.on( 'Network.responseReceived', ( message ) => {
-		const status =
-			message && message.response && message.response.status
-				? message.response.status
-				: null;
-		if ( status && 200 !== status ) {
-			errorLog.addNetworkError( message.response );
-		}
-	} );
 
 	await simulateAdverseConditions();
 	await trashAllPosts();
