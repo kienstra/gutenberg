@@ -281,19 +281,6 @@ beforeAll( async () => {
 		'Page.navigatedWithinDocument',
 	];
 
-	events.forEach( ( event ) => {
-		errorLog.addNetworkError( `This event was triggered: ${ event }` );
-		cdpSession.on('Network.responseReceived', (message) => {
-			const status =
-				message && message.response && message.response.status
-					? message.response.status
-					: null;
-			if (status && 200 !== status) {
-				errorLog.addNetworkError( message.response );
-			}
-		});
-	});
-
 	cdpSession.on( 'Network.responseReceived', ( message ) => {
 		const status =
 			message && message.response && message.response.status

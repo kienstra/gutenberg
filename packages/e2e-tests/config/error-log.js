@@ -1,35 +1,33 @@
-class ErrorLog {
-	constructor() {
-		this.screenshot = '';
-		this.dom = '';
-		this.networkErrors = [];
-	}
+module.exports = class ErrorLog {
+	static screenshot = '';
+	static dom = '';
+	static networkErrors = [];
 
-	setScreenshot( screenshot ) {
+	static setScreenshot( screenshot ) {
 		this.screenshot = screenshot;
 	}
 
-	setDom( dom ) {
+	static setDom( dom ) {
 		this.dom = dom;
 	}
 
-	getDom() {
+	static getDom() {
 		return this.dom;
 	}
 
-	addNetworkError( error ) {
+	static addNetworkError( error ) {
 		this.networkErrors.push( error );
 	}
 
-	getConsoleMessage() {
+	static getConsoleMessage() {
 		return `Here is a screenshot of when the test failed: \n \ndata:image/jpeg;base64,${ this.screenshot } \n`;
 	}
 
-	getNetworkErrors() {
+	static getNetworkErrors() {
 		if ( this.networkErrors.length ) {
 			return `Here is the last network error: \n \n${ this.networkErrors.pop() } \n`;
+		} else {
+			return `There was no network error`;
 		}
 	}
-}
-
-module.exports = new ErrorLog();
+};

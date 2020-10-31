@@ -8,9 +8,9 @@ const { VerboseReporter } = require( '@jest/reporters' );
 /**
  * Internal dependencies
  */
-const errorLog = require( './error-log.js' );
 const jsdom = require( 'jsdom' );
 const { JSDOM } = jsdom;
+const errorLog = require( './error-log.js' );
 
 module.exports = class ErrorCaptureReporter extends VerboseReporter {
 	onTestResult( ...args ) {
