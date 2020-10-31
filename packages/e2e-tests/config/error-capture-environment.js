@@ -31,7 +31,7 @@ module.exports = class ErrorCaptureEnvironment extends PuppeteerEnvironment {
 		} );
 
 		cdpSession.on( 'Network.loadingFailed', ( message ) => {
-			errorLog.addLoadingFailed( message.response );
+			errorLog.addLoadingFailed( message );
 		} );
 	}
 
