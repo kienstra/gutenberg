@@ -3,6 +3,7 @@ class ErrorLog {
 		this.screenshot = '';
 		this.dom = '';
 		this.networkErrors = [];
+		this.loadingFailed = [];
 	}
 
 	setScreenshot( screenshot ) {
@@ -19,6 +20,10 @@ class ErrorLog {
 
 	addNetworkError( error ) {
 		this.networkErrors.push( error );
+	}
+
+	addLoadingFailed( error ) {
+		this.loadingFailed.push( error );
 	}
 
 	getConsoleMessage() {
@@ -41,7 +46,20 @@ class ErrorLog {
 				2
 			) } \n`;
 		}
+
 		return `There was no network error`;
+	}
+
+	getLoadingFailed() {
+		if ( this.loadingFailed.length ) {
+			return `💡 Here are the loading failed errors, starting with the latest: \n \n${ JSON.stringify(
+				this.loadingFailed.reverse(),
+				null,
+				2
+			) } \n`;
+		}
+
+		return `There was no loading failed error`;
 	}
 }
 

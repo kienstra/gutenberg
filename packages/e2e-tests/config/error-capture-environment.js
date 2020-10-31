@@ -29,6 +29,10 @@ module.exports = class ErrorCaptureEnvironment extends PuppeteerEnvironment {
 				errorLog.addNetworkError( message.response );
 			}
 		} );
+
+		cdpSession.on( 'Network.loadingFailed', ( message ) => {
+			errorLog.addLoadingFailed( message.response );
+		} );
 	}
 
 	async teardown() {
@@ -46,7 +50,6 @@ module.exports = class ErrorCaptureEnvironment extends PuppeteerEnvironment {
 		const buffer = Buffer.from( screenshot, screenshotType );
 		const base64 = buffer.toString( 'base64' );
 
-		// eslint-disable-next-line no-console
 		errorLog.setScreenshot( base64 );
 		const dom = await this.global.page.evaluate(
 			() => document.documentElement.outerHTML

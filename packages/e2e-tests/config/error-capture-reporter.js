@@ -21,6 +21,7 @@ module.exports = class ErrorCaptureReporter extends VerboseReporter {
 			this.checkCompoundSelector();
 			console.log( errorLog.getConsoleMessage() );
 			console.log( errorLog.getNetworkErrors() );
+			console.log( errorLog.getLoadingFailed() );
 		}
 
 		super.onTestResult( ...args );
