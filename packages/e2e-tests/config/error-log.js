@@ -14,10 +14,6 @@ class ErrorLog {
 		this.dom = dom;
 	}
 
-	getDom() {
-		return this.dom;
-	}
-
 	addNetworkError( error ) {
 		this.networkErrors.push( error );
 	}
@@ -26,17 +22,17 @@ class ErrorLog {
 		this.loadingFailed.push( error );
 	}
 
-	getConsoleMessage() {
+	getScreenshotMessage() {
 		return `Here is a screenshot of when the test failed: \n \ndata:image/jpeg;base64,${ this.screenshot } \n`;
 	}
 
+	getDom() {
+		return this.dom;
+	}
+
 	getNetworkErrors() {
-		if ( this.networkErrors.length > 1 ) {
-			return `💡 Here are the network errors, starting with the latest: \n \n${ JSON.stringify(
-				this.networkErrors.reverse(),
-				null,
-				2
-			) } \n`;
+		if ( ! this.networkErrors.length ) {
+			return 'There was no network error';
 		}
 
 		if ( this.networkErrors.length === 1 ) {
@@ -47,19 +43,31 @@ class ErrorLog {
 			) } \n`;
 		}
 
-		return `There was no network error`;
+		return `💡 Here are the network errors, starting with the latest: \n \n${ JSON.stringify(
+			this.networkErrors.reverse(),
+			null,
+			2
+		) } \n`;
 	}
 
-	getLoadingFailed() {
-		if ( this.loadingFailed.length ) {
-			return `💡 Here are the loading failed errors, starting with the latest: \n \n${ JSON.stringify(
+	getLoadingFailedErrors() {
+		if ( ! this.loadingFailed.length ) {
+			return 'There was no loadingFailed error';
+		}
+
+		if ( this.loadingFailed.length > 1 ) {
+			return `💡 Here are the loadingFailed errors, starting with the latest: \n \n${ JSON.stringify(
 				this.loadingFailed.reverse(),
 				null,
 				2
 			) } \n`;
 		}
 
-		return `There was no loading failed error`;
+		return `💡 There was a loadingFailed error that might be related: \n \n${ JSON.stringify(
+			this.loadingFailed,
+			null,
+			2
+		) } \n`;
 	}
 }
 

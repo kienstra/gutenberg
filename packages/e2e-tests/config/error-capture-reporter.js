@@ -10,18 +10,18 @@ const { VerboseReporter } = require( '@jest/reporters' );
  */
 const jsdom = require( 'jsdom' );
 const { JSDOM } = jsdom;
-const errorLog = require( './error-log.js' );
+const errorLog = require( './error-log' );
 
 module.exports = class ErrorCaptureReporter extends VerboseReporter {
 	onTestResult( ...args ) {
-		const testResult = args[ 1 ];
+		const [ , testResult ] = args;
 		if ( testResult.numFailingTests !== 0 || testResult.failureMessage ) {
 			this.setProperties( testResult.failureMessage );
 			this.checkForSingleSelector();
 			this.checkCompoundSelector();
-			console.log( errorLog.getConsoleMessage() );
+			console.log( errorLog.getScreenshotMessage() );
 			console.log( errorLog.getNetworkErrors() );
-			console.log( errorLog.getLoadingFailed() );
+			console.log( errorLog.getLoadingFailedErrors() );
 		}
 
 		super.onTestResult( ...args );
@@ -38,18 +38,6 @@ module.exports = class ErrorCaptureReporter extends VerboseReporter {
 		}
 
 		this.fullSelector = selectorMatch ? selectorMatch[ 1 ] : null;
-	}
-
-	joinArraySubsetFromBeginning( array, length ) {
-		const copiedArray = array;
-		return copiedArray.splice( 0, length ).join( this.dividingCharacter );
-	}
-
-	joinArraySubsetFromEnd( array, length ) {
-		const copiedArray = array;
-		return copiedArray
-			.splice( copiedArray.length - length, length )
-			.join( this.dividingCharacter );
 	}
 
 	checkForBeginningSelector( attributeName, selectorPart ) {
@@ -90,6 +78,18 @@ module.exports = class ErrorCaptureReporter extends VerboseReporter {
 				}
 			} );
 		}
+	}
+
+	joinArraySubsetFromBeginning( array, length ) {
+		const copiedArray = array;
+		return copiedArray.splice( 0, length ).join( this.dividingCharacter );
+	}
+
+	joinArraySubsetFromEnd( array, length ) {
+		const copiedArray = array;
+		return copiedArray
+			.splice( copiedArray.length - length, length )
+			.join( this.dividingCharacter );
 	}
 
 	checkForEndingSelector( attributeName, selectorPart ) {
